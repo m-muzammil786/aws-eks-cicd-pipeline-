@@ -30,22 +30,22 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - echo dckr_pat_5IyhSP4dCDWcSgU9hYDp1Z3Et9o | docker login --username alnafidocker --password-stdin
-      - docker build -t cicd-integrate-clair_and_ecr . 
-      - docker tag cicd-integrate-clair_and_ecr:latest 587027614473.dkr.ecr.us-east-1.amazonaws.com/cicd-integrate-clair_and_ecr:latest
+      - echo dckr_pat_99wsK-e3hJ3BHxoz7vsxPpqDg1c | docker login --username mustafajafri --password-stdin
+      - docker build -t eks-lab-5 .
+      - docker tag eks-lab-5:latest public.ecr.aws/c3x5e8o7/eks-lab-5:latest
 
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 587027614473.dkr.ecr.us-east-1.amazonaws.com
-      - docker push 587027614473.dkr.ecr.us-east-1.amazonaws.com/cicd-integrate-clair_and_ecr:latest || (echo "docker push failed" && exit 1)
+      - aws ecr-public get-login-password --region us-east-2 | docker login --username AWS --password-stdin public.ecr.aws/c3x5e8o7
+      - docker push public.ecr.aws/c3x5e8o7/eks-lab-5:latest || (echo "docker push failed" && exit 1)
       # Scan the image with Clair
       - echo Scanning the Docker image with Clair...
       - clair-scanner --ip 54.209.191.96 -r clair_report.json -l clair_log.json --threshold="Critical" 587027614473.dkr.ecr.us-east-1.amazonaws.com/cicd-integrate-clair_and_ecr:latest || (echo "clair-scanner failed" && exit 1)
       - echo Clair scanning completed
       - echo Updating kubeconfig...
-      - aws eks update-kubeconfig --region us-east-1 --name eks
+      - aws eks update-kubeconfig --region us-east-2 --name kubernetes-lab-03
       - kubectl config current-context
       - kubectl get nodes
       - echo Deploying to Kubernetes cluster...
